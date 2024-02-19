@@ -1,6 +1,7 @@
 package org.reports.customer_reports.controller;
 
 import org.reports.customer_reports.entity.Customer;
+import org.reports.customer_reports.request.CustomerFilterCriteria;
 import org.reports.customer_reports.services.ConsumerCustomerService;
 import org.reports.customer_reports.services.CustomerReportsService;
 import org.reports.customer_reports.services.ProducerCustomerService;
@@ -12,9 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
@@ -37,14 +36,15 @@ public class CustomerController {
     }
 
     @GetMapping(value = "/customer")
-    public ResponseEntity<Resource>   getCustomers(){
-        //String filename = "tutorials.csv";
-     //   InputStreamResource file = new InputStreamResource(customerReportsService.customersToCSV());
-        ;
-        // Return the zip file as a downloadable resource
+    public ResponseEntity<Resource> getCustomers() {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=customers.zip")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(customerReportsService.generateZipFile());
+    }
+
+    @PostMapping("/customer/filter/criteria")
+    public ResponseEntity<?> getDesiredCustomer(@RequestParam int pageNumber, @RequestBody CustomerFilterCriteria customerFilterCriteria) {
+        return new ResponseEntity<>(ConsumerCustomerService.getCustomerDataBySearchCriteria(pageNumber, customerFilterCriteria), HttpStatus.OK);
     }
 }

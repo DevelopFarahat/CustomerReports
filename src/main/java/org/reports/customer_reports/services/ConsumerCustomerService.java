@@ -1,7 +1,10 @@
 package org.reports.customer_reports.services;
 
+import org.apache.tomcat.util.bcel.classfile.Constant;
+import org.reports.customer_reports.constants.Constants;
 import org.reports.customer_reports.entity.Customer;
 import org.reports.customer_reports.repository.CustomerRepository;
+import org.reports.customer_reports.request.CustomerFilterCriteria;
 import org.reports.customer_reports.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,6 +30,11 @@ public class ConsumerCustomerService {
         Pageable pages = PageRequest.of(pageNumber, pageSize, Sort.by("id").ascending());
         return customerRepository.findAll(pages).getContent();
     }
+    public List<Customer> getCustomerPage(int pageNumber, int pageSize,CustomerFilterCriteria customerFilterCriteria) {
+        Pageable pages = PageRequest.of(pageNumber, pageSize, Sort.by("id").ascending());
+        CustomerSpecification customerSpecification = new CustomerSpecification(customerFilterCriteria);
+        return customerRepository.findAll(customerSpecification, pages).getContent();
+    }
 
     public long getTotalCustomers() {
         return customerRepository.count();
@@ -51,8 +59,10 @@ public class ConsumerCustomerService {
         CompletableFuture<List<List<Customer>>> allFutureResults = allFuture.thenApply(t -> completableFuturesList.stream().map(CompletableFuture::join).collect(Collectors.toList()));
         CompletableFuture<List<List<String[]>>> csvCustomerData = allFutureResults.thenApply(future -> future.stream().map(Utils::toStringArray).collect(Collectors.toList()));
         return csvCustomerData;
+    }
 
-
+    public List<Customer> getCustomerDataBySearchCriteria(int pageNumber,CustomerFilterCriteria customerFilterCriteria){
+       return getCustomerPage(pageNumber, Constants.pageSize,customerFilterCriteria);
     }
 
 }
